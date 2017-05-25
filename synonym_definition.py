@@ -1,9 +1,8 @@
 #! /usr/bin/python
 
 import sys
-import re
 from nltk.corpus import wordnet
-from collections import Counter
+from sklearn.externals.joblib import load, dump
 
 """
 __author__ = "Akash Pandey"
@@ -11,10 +10,7 @@ __email__ = "akashpandey111@gmail.com"
 """
 
 
-def words(text):
-    return re.findall(r'\w+', text.lower())
-
-WORDS = Counter(words(open('big.txt').read()))
+WORDS = load('genuine.pkl')
 
 
 def p(word, n=sum(WORDS.values())):
@@ -54,18 +50,16 @@ def edits2(word):
 if __name__ == '__main__':
 
     while True:
+        search_word = raw_input("Word >>> ")
+
+        if search_word == "exit":
+            break
+
+        if search_word != correction(search_word):
+            print "Did you mean %s? If yes, please try again with the correct spelling!" % correction(search_word)
+
         try:
-            word = raw_input("Word >>> ")
-
-            if word == "exit":
-                break
-
-            if word != correction(word):
-                print "Did you mean %s? If yes, please try again with the correct spelling!" %(correction(word))
-                print
-                continue
-
-            sins = wordnet.synsets(word)
+            sins = wordnet.synsets(search_word)
 
             print "\n\n%s:" %(sins[0].lemmas()[0].name())
             print "\nDefinition :", str(sins[0].definition())
@@ -85,12 +79,11 @@ if __name__ == '__main__':
             if antonyms:
                 print "Antonyms : ", ", ".join([str(i) for i in list(set(antonyms))])
 
-            del synonyms, antonyms, word, sins
+            del synonyms, antonyms, search_word, sins
 
             print
+
         except LookupError:
-            from nltk import download
-            print "Downloading data. This is a one time process. Please be patient..."
-            download()
+            print "Unable to find search results for %s. Please check the word again." % search_word
 
     sys.exit(True)
